@@ -71,10 +71,19 @@ ul.rules li{margin:4px 0}
 (function(){
 "use strict";
 var EXAM = JSON.parse(document.getElementById('exam-data').textContent);
-var Q = EXAM.questions, N = Q.length, DURATION = EXAM.durationSec;
+var BASE = EXAM.questions, Q = [], N = BASE.length, DURATION = EXAM.durationSec;
 var KEY = 'ccarf-mock::' + EXAM.examId;
 var LET = 'ABCDEFG';
 var state = load() || {phase:'intro', answers:{}, flags:{}, cur:0, startedAt:null, endsAt:null, submittedAt:null, result:null};
+function shuf(n){ var a=[],i,j,t; for(i=0;i<n;i++)a.push(i); for(i=n-1;i>0;i--){ j=Math.floor(Math.random()*(i+1)); t=a[i];a[i]=a[j];a[j]=t; } return a; }
+function newOrder(){ state.ord=shuf(N); state.oo=BASE.map(function(b){ return shuf(b.options.length); }); }
+function applyOrder(){
+  if(!state.ord || state.ord.length!==N || !state.oo){ if(state.answers && Object.keys(state.answers).length){ state.ord=shuf(0).concat(BASE.map(function(_,i){return i;})); state.oo=BASE.map(function(b){return b.options.map(function(_,k){return k;});}); } else newOrder(); save(); }
+  Q = state.ord.map(function(qi){ var b=BASE[qi], p=state.oo[qi], o={}; for(var k in b) o[k]=b[k];
+    o.options=p.map(function(k){ return b.options[k]; });
+    o.answers=b.answers.map(function(a){ return p.indexOf(a); }).sort(function(x,y){return x-y;}); return o; });
+}
+applyOrder();
 var timerH = null;
 
 function load(){ try{ var s = localStorage.getItem(KEY); return s ? JSON.parse(s) : null; }catch(e){ return null; } }
@@ -136,7 +145,7 @@ function introHTML(){
 }
 function bindIntro(){
   $('start').onclick = function(){
-    state.phase='exam'; state.startedAt=Date.now(); state.endsAt=Date.now()+DURATION*1000; state.cur=0; save(); render();
+    if(!state.answers || !Object.keys(state.answers).length){ newOrder(); applyOrder(); } state.phase='exam'; state.startedAt=Date.now(); state.endsAt=Date.now()+DURATION*1000; state.cur=0; save(); render();
   };
 }
 
@@ -269,7 +278,7 @@ function fbtn(k,t){ return '<button class="btn'+(filter===k?' on':'')+'" data-f=
 function bindResult(){
   Array.prototype.forEach.call(document.querySelectorAll('#filters .btn'), function(b){ b.onclick=function(){ filter=b.getAttribute('data-f'); document.getElementById('filters').innerHTML=fbtn('all','Tất cả')+fbtn('wrong','Sai / bỏ trống')+fbtn('flag','Đã gắn cờ')+fbtn('right','Đúng'); bindResult(); }; });
   drawReview();
-  $('again').onclick=function(){ if(confirm('Xoá bài làm và thi lại đề này?')){ try{localStorage.removeItem(KEY);}catch(e){} state={phase:'intro',answers:{},flags:{},cur:0,startedAt:null,endsAt:null,submittedAt:null,result:null}; render(); } };
+  $('again').onclick=function(){ if(confirm('Xoá bài làm và thi lại đề này?')){ try{localStorage.removeItem(KEY);}catch(e){} state={phase:'intro',answers:{},flags:{},cur:0,startedAt:null,endsAt:null,submittedAt:null,result:null}; newOrder(); applyOrder(); save(); render(); } };
 }
 function drawReview(){
   var h='';
