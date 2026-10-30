@@ -61,6 +61,7 @@ table{border-collapse:collapse;width:100%}th,td{padding:7px 8px;border-bottom:1p
 .modal{position:fixed;inset:0;background:rgba(15,20,30,.55);display:flex;align-items:center;justify-content:center;z-index:20;padding:16px}
 .modal .box{background:#fff;border-radius:12px;padding:22px;max-width:480px;width:100%}
 ul.rules li{margin:4px 0}
+.againbar{position:sticky;bottom:8px;z-index:20;box-shadow:0 -2px 12px rgba(0,0,0,.25);margin-top:12px}@media(max-width:600px){.againbar{padding:8px 10px}.againbar .small{display:none}}
 </style>
 </head>
 <body>
@@ -247,7 +248,7 @@ function resultHTML(){
    '<div class="card"><h2>Theo kịch bản</h2><table>'+sc+'</table></div>'+
    '<div class="card"><h2>Xem lại bài làm và giải thích</h2><div class="filters" id="filters">'+
    fbtn('all','Tất cả')+fbtn('wrong','Sai / bỏ trống')+fbtn('flag','Đã gắn cờ')+fbtn('right','Đúng')+'</div><div id="review"></div></div>'+
-   '<div class="card"><button class="btn" id="again">Làm lại đề này</button> <span class="mut small">Xoá bài làm đã lưu và thi lại cùng đề (đề mới sinh bằng build_exam.py cho ngày khác).</span></div></div>';
+   '<div class="card againbar"><button class="btn" id="again">Làm lại đề này</button> <span class="mut small">Xoá bài làm đã lưu và thi lại cùng đề (đề mới sinh bằng build_exam.py cho ngày khác).</span></div></div>';
   return h;
 }
 function fbtn(k,t){ return '<button class="btn'+(filter===k?' on':'')+'" data-f="'+k+'">'+t+'</button>'; }
